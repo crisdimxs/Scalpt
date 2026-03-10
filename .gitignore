@@ -1,0 +1,14 @@
+.venv/
+src/__pycache__/
+__pycache__/
+*.pyc
+
+
+data/*.csv
+models/*.zip
+models/*.pth
+
+pip_tmp/
+temp_install/
+pip_buffer/
+
