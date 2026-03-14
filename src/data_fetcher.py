@@ -2,28 +2,27 @@ import ccxt
 import pandas as pd
 import time
 
+from rich.console import Console
 from src.config import TICKER, TIME_FRAME, DATA_PATH
 
-def fetch_historical_data(limit=2000):
+def fetch_historical_data(limit=10000):
     exchange = ccxt.binance()
-    print(f"Conecting to Binance for download {limit} candles for {TICKER}...")
     
-    # Download OHLCV (Open, High, Low, Close, Volume)
-    ohlcv = exchange.fetch_ohlcv(TICKER, timeframe=TIME_FRAME, limit=limit)
+    with Console().status(f"[bold white] Connecting to Binance for download {limit} candles for {TICKER}..."):
+        ohlcv = exchange.fetch_ohlcv(TICKER, timeframe=TIME_FRAME, limit=limit)
+        
+    Console().print(f"[bold green]\[ + ] Succesfully connected to Binance")
     
-    # Make DataFrame
-    df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-    
-    # Convert timestamp to format readable for FinRL
-    df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
-    df = df.drop(columns=['timestamp'])
-    
-    # Add column 'tic' required for FinRL
-    df['tic'] = TICKER
-    
-    # Save data in folder data/
-    df.to_csv(DATA_PATH, index=False)
-    print(f"Data saved in  {DATA_PATH}")
+    with Console().status("[bold white] Processing data and saving to CSV..."):
+        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
+        df = df.dropna() 
+        df['tic'] = TICKER
+        df = df[["date", "open", "high", "low", "close", "volume", "tic"]]
+        
+        df.to_csv(DATA_PATH, index=False)
+
+    Console().print(f"[bold green]\[ + ] Data saved in  {DATA_PATH}")
     return df
 
 if __name__ == "__main__":
