@@ -1,5 +1,5 @@
 import ccxt
-import pandas as pd
+import pandas
 import time
 
 from rich.console import Console
@@ -7,14 +7,28 @@ from src.config import TICKER, TIME_FRAME, DATA_PATH
 
 process = ["[ x ]", "[ + ]", "[ ! ]", "[ * ]"]
 
+banner = """
+         _____________________      #######   ########   #######   #          ######   ########
+        |                     |    #         #          #       #  #         #      #     #
+        |  Buy Bitcoin, HODL  |     ######   #          # ##### #  #         # #####      #
+        |    and FUCK BANKS   |           #  #          #       #  #         #            #
+        |___________________  \\    #######    ########  #       #   #######  #            #
+                            \\_\\
+                                \   ^__^            By: crisdimxs
+                                 \  (OO)\_______    Github: https://github.com/crisdimxs/Scalpt
+                                    (__)\       )\/ X: https://x.com/crisdimxs
+                                        ||----w |
+                                        ||     ||   Powered by: FinRL
+"""
+
 def fetch_historical_data(limit=10000, show_status=True):
     exchange = ccxt.binance()
     
     def download():
         ohlcv = exchange.fetch_ohlcv(TICKER, timeframe=TIME_FRAME, limit=limit)
     
-        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
+        df = pandas.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        df['date'] = pandas.to_datetime(df['timestamp'], unit='ms')
         df = df.dropna()
         df['tic'] = TICKER
         df = df[["date", "open", "high", "low", "close", "volume", "tic"]]
@@ -34,4 +48,5 @@ def fetch_historical_data(limit=10000, show_status=True):
         return download()
 
 if __name__ == "__main__":
+    print(banner)
     fetch_historical_data()
