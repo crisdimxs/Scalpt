@@ -2,24 +2,11 @@ import ccxt
 import pandas
 import time
 
+from src.utils import banner
 from rich.console import Console
 from src.config import TICKER, TIME_FRAME, DATA_PATH
 
 process = ["[ x ]", "[ + ]", "[ ! ]", "[ * ]"]
-
-banner = """
-         _____________________      #######   ########   #######   #          ######   ########
-        |                     |    #         #          #       #  #         #      #     #
-        |  Buy Bitcoin, HODL  |     ######   #          # ##### #  #         # #####      #
-        |    and FUCK BANKS   |           #  #          #       #  #         #            #
-        |___________________  \\    #######    ########  #       #   #######  #            #
-                            \\_\\
-                                \   ^__^            By: crisdimxs
-                                 \  (OO)\_______    Github: https://github.com/crisdimxs/Scalpt
-                                    (__)\       )\/ X: https://x.com/crisdimxs
-                                        ||----w |
-                                        ||     ||   Powered by: FinRL
-"""
 
 def fetch_historical_data(limit=10000, show_status=True):
     exchange = ccxt.binance()
@@ -48,5 +35,5 @@ def fetch_historical_data(limit=10000, show_status=True):
         return download()
 
 if __name__ == "__main__":
-    print(banner)
+    banner()
     fetch_historical_data()

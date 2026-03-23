@@ -1,27 +1,14 @@
 import pandas
 import os
 
+from src.utils import banner
 from rich.console import Console
-from stable_baselines3 import PPO # Importamos PPO directamente
+from stable_baselines3 import PPO
 from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 from finrl.meta.preprocessor.preprocessors import FeatureEngineer
 from src.config import DATA_PATH, TECHNICAL_INDICATORS, TRANSACTION_FEE_PERCENT, TRAINED_MODEL_DIR
 
 process = ["[ x ]", "[ + ]", "[ ! ]", "[ * ]"]
-
-banner = """
-         _____________________      #######   ########   #######   #          ######   ########
-        |                     |    #         #          #       #  #         #      #     #
-        |  Buy Bitcoin, HODL  |     ######   #          # ##### #  #         # #####      #
-        |    and FUCK BANKS   |           #  #          #       #  #         #            #
-        |___________________  \\    #######    ########  #       #   #######  #            #
-                            \\_\\
-                                \   ^__^            By: crisdimxs
-                                 \  (OO)\_______    Github: https://github.com/crisdimxs/Scalpt
-                                    (__)\       )\/ X: https://x.com/crisdimxs
-                                        ||----w |
-                                        ||     ||   Powered by: FinRL
-"""
 
 def train_model():
     with Console().status(f"Loading data from {DATA_PATH}..."):
@@ -83,5 +70,5 @@ def train_model():
     Console.print(f"[bold cyan]{process[3]}" + f"[bold white] Model saved in {TRAINED_MODEL_DIR}")
 
 if __name__ == "__main__":
-    print(banner)
+    banner()
     train_model()
