@@ -42,23 +42,23 @@ def train_model():
 
     with Console().status("Making model PPO with Stable Baselines 3..."):    
         policy_kwargs = dict(
-            net_arch=dict(pi=[256, 256, 256], vf=[256, 256, 256]) 
+            net_arch=dict(pi=[1024, 1024, 1024], vf=[1024, 1024, 1024]) 
         )
 
         model = PPO(
             policy="MlpPolicy",
             env=env_train,
-            learning_rate=0.00002,
-            n_steps=4096,
-            batch_size=256,
-            ent_coef=0.05,
+            learning_rate=0.00001,
+            n_steps=8192,
+            batch_size=512,
+            ent_coef=0.01,
             policy_kwargs=policy_kwargs,
-            verbose=0,
+            verbose=1,
             device="cpu"
         )
 
     with Console().status("Training model 256x256x256 (This process will take a while, please check back later)"):
-        model.learn(total_timesteps=1500000, tb_log_name="ppo_btc_5m_v1")
+        model.learn(total_timesteps=3500000, tb_log_name="ppo_btc_5m_v1")
 
     Console().print(f"[bold green]{process[1]} " + "[bold white] Model succesfully trained!")
     
