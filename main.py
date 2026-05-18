@@ -2,6 +2,8 @@
 import time
 import threading
 
+from datetime import datetime, timedelta
+
 from src.utils import *
 from src.config import TICKER
     
@@ -9,6 +11,21 @@ from rich.console import Console
 from rich.live import Live
 
 current_price = 0
+
+def wait_candle():
+    now = datetime.utcnow()
+
+    next_minute = (now.minute // 5 + 1) * 5
+    
+    if next_minute == 60:
+        next_candle = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+
+    else:
+        next_candle = now.replace(minute=next_minute, second=0, microsecond=0)
+
+    sleep_time = (next_candle - now).total_seconds()
+
+    time.sleep(sleep_time)
 
 def update_price(trading):
     global current_price
@@ -27,6 +44,9 @@ if __name__ == "__main__":
         banner()
     
         trading = TradingService()
+        trading.close_position()
+        algo = FetchAlgo(timeframe="5m")
+        #fetch_ai = FetchAI()
         ui = UI()
 
         threading.Thread(target=update_price, args=(trading,), daemon=True).start()
@@ -47,11 +67,12 @@ if __name__ == "__main__":
                     ui.wallet = trading.review_balance()
                     
                 else:
-                    signal = FetchAI().get_signal()
+                    signal = algo.get_signal()#fetch_ai.get_signal()
                     ui.action = signal
-                    
+                    ui.current_price = current_price
+
                     if signal == "HODL":
-                        time.sleep(300)
+                        wait_candle()
                     
                     else:
                         trading.close_position()
@@ -60,7 +81,7 @@ if __name__ == "__main__":
                         take_price = trading.take_profit() 
 
                 live.update(ui.ui())
-    
+                
     except KeyboardInterrupt:
         print("Script cancelado")
         trading.close_position()
