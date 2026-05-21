@@ -21,7 +21,7 @@ from rich.table import Table
 
 
 
-VERSION = '0.9.0-beta'
+VERSION = '1.0.0'
 
 exchange = ccxt.binanceusdm({
         "apiKey": API_KEY,
@@ -102,16 +102,11 @@ class TradingService:
 
         return self.entry_price
 
-    def stop_loss(self):
-        risk_amount = self.amount * 0.025
-        price_move = risk_amount / self.total_amount
-
+    def stop_loss(self, stop_price):
         if self.action == "buy":
-            stop_price = self.entry_price - price_move
             sl_side = "sell"
 
         else:
-            stop_price = self.entry_price + price_move
             sl_side = "buy"
 
         stop_price = float(exchange.price_to_precision(self.symbol, stop_price))
@@ -129,6 +124,7 @@ class TradingService:
         )
 
         return stop_price
+
     def take_profit(self):
         profit_amount = self.amount * 0.05   # 5% CAPITAL
         price_move = profit_amount / self.total_amount
@@ -157,23 +153,10 @@ class TradingService:
 
         return tp_price
     
-    def trailing_stop(self):
+    def trailing_stop(self, callback_rate, activation_price):
         side = "buy" if self.action == "sell" else "sell"
 
-        if side == "buy":
-            self.breakeven = self.entry_price * 0.9992
-
-        else:
-            self.breakeven = self.entry_price * 1.0008
-
-        callback_rate = 0.5
-
-        if side == "buy":
-            activation_price = self.breakeven / (1 + (callback_rate/100))
-
-        else:
-            activation_price = self.breakeven / (1 - (callback_rate/100))
-
+        
         exchange.create_order(
             symbol=self.symbol,
             type="TRAILING_STOP_MARKET",
@@ -370,7 +353,7 @@ class FetchAlgo:
                         ep = low[i]
                         af = min(af + step, max_step)
 
-        return pandas.Series(psar, index=df.index)
+        return pandas.Series(psar, index=df.index), psar[-1]
 
     # =========================
     # 🎯 SIGNAL
@@ -382,7 +365,7 @@ class FetchAlgo:
             # indicadores
             df["ema200"] = self.calculate_ema(df)
             df["rsi"] = self.calculate_rsi(df)
-            df["psar"] = self.calculate_psar(df)
+            df["psar"] , stop_loss = self.calculate_psar(df)
 
             last = df.iloc[-1]
             prev = df.iloc[-2]
@@ -398,9 +381,9 @@ class FetchAlgo:
             psar_flip = prev_trend == "bearish" and current_trend == "bullish"
 
             if psar_flip and price > ema200 and rsi > 50:
-                return "buy"
+                return "buy", stop_loss
 
-            return "HODL"
+            return "HODL", stop_loss
 
         except Exception as e:
             print(f"Error en FetchAlgo: {e}")

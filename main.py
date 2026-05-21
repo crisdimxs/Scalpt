@@ -60,14 +60,15 @@ if __name__ == "__main__":
                 if trading.has_position():
                     ui.entry_price = entry_price
                     ui.stop_price = stop_price
-                    ui.tp_price = take_price
+                    ui.tp_price = tp
                     if current_price:
                         ui.pnl = trading.calculate_pnl(ui.current_price)
                     
                     ui.wallet = trading.review_balance()
                     
                 else:
-                    signal = algo.get_signal()#fetch_ai.get_signal()
+                    trading.close_position()
+                    signal, sl_price = algo.get_signal()#fetch_ai.get_signal()
                     ui.action = signal
                     ui.current_price = current_price
 
@@ -75,10 +76,20 @@ if __name__ == "__main__":
                         wait_candle()
                     
                     else:
-                        trading.close_position()
                         entry_price = trading.make_position(signal)
-                        stop_price = trading.stop_loss()
-                        take_price = trading.take_profit() 
+
+                        #PoW
+                        tp = entry_price + (entry_price - sl_price) * 1.5
+
+                        difference_price = tp - entry_price
+                        parts = difference_price / 2
+
+                        activation_price = entry_price + parts
+                        callback_rate = (parts / tp) * 100
+
+                        callback_rate = round(callback_rate, 2)
+                        stop_price = trading.stop_loss(sl_price)
+                        trading.trailing_stop(callback_rate, activation_price)
 
                 live.update(ui.ui())
                 
